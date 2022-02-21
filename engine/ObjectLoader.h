@@ -3,20 +3,16 @@
 #include <vector>
 #include <string>
 
+#include <iostream>
+#include <sstream>
+#include <fstream>
+
 #include "glm/glm.hpp"
 #include <GL/glew.h>
-#include "GLFW/glfw3.h"
 
-#include "Mesh.h"
+class Mesh;
 
 namespace ObjectLoader {
-	bool LoadObject
-	(
-		const char* path,
-		MeshData& outMesh
-	);
 
-	GLuint LoadBMP(const char* imgPath);
-
-	Mesh* SpawnObject(const MeshData&);
+	
 }

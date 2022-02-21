@@ -1,7 +1,8 @@
 #pragma once
 
 #include "glm/glm.hpp"
-#include <GL/glew.h>
+
+#include "GL/glew.h"
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
@@ -12,6 +13,8 @@
 #include <sstream>
 #include <vector>
 #include <cstdlib>
+
+class Mesh;
 
 class Renderer
 {
@@ -54,8 +57,9 @@ protected:
 
 	double lastTime{ 0.0 };
 
-private:
-	GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path);
+	std::vector<Mesh> meshes;
 
+private:
+	
 	void calcInputs(GLFWwindow* window);
 };

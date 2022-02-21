@@ -8,6 +8,11 @@ void Base::initialized()
 {
 }
 
-void Base::setWorldLocation()
+void Base::setWorldLocation(glm::vec3 inWorldLocation)
 {
+}
+
+glm::vec3 Base::getWorldLocation()
+{
+	return glm::vec3();
 }

@@ -1,11 +1,11 @@
 #define GLEW_STATIC
 
+#include "Mesh.h"
 #include "Renderer.h"
+
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform.hpp"
-
-#include "ObjectLoader.h"
 
 Renderer::Renderer(int wWidth, int wHeight)
     : width(wWidth), height(wHeight)
@@ -71,69 +71,16 @@ int Renderer::Begin()
     glEnable(GL_CULL_FACE);
     glDepthFunc(GL_LESS);
 
-    GLuint VertexArrayID;
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
-
-    GLuint programID = LoadShaders("engine/vertex.txt", "engine/frag.txt");
-
-    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-    GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
-    GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
-
-    GLuint objTexture = ObjectLoader::LoadBMP("engine/tex.bmp");
-    GLuint textureID = glGetUniformLocation(programID, "myTextureSampler");
-
-    MeshData newMesh;
-    bool result = ObjectLoader::LoadObject("engine/cube.obj", newMesh);
-
-    std::vector<glm::vec3>& vertices = newMesh.vertices;
-    std::vector<glm::vec2>& uvs = newMesh.uvs;
-    std::vector<glm::vec3>& normals = newMesh.normals;
-
-    if (!result) {
-        printf("\nFailed to read object, exiting");
-        return -1;
-    }
-
-    GLuint vertexBuffer;
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-
-    GLuint uvBuffer;
-    glGenBuffers(1, &uvBuffer);
-
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
-
-    GLuint normalBuffer;
-    glGenBuffers(1, &normalBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
-   
-   // std::vector<unsigned int> indices;
-
-   // GLuint elementBuffer;
-   // glGenBuffers(1, &elementBuffer);
-   // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-    
-    glUseProgram(programID);
-    GLuint lightID = glGetUniformLocation(programID, "LightPosition_worldspace");
-
     double lastFrameCounterTime = glfwGetTime();
     int nbFrames = 0;
     
+    Mesh newMesh1 = Mesh::SpawnObject(glm::vec3(0, 0, 0));
+    meshes.push_back(newMesh1);
+
     while (!glfwWindowShouldClose(thisWindow)) {
         if (glfwGetKey(thisWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(thisWindow, GL_TRUE);
 
-            glDeleteBuffers(1, &vertexBuffer);
-            glDeleteBuffers(1, &uvBuffer);
-            glDeleteVertexArrays(1, &VertexArrayID);
-            glDeleteProgram(programID);
-            glDeleteTextures(1, &objTexture);
 
             glfwTerminate();
         }
@@ -151,44 +98,13 @@ int Renderer::Begin()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(programID);
-
         calcInputs(thisWindow);
         glm::mat4 projectionMatrix = getProjectionMatrix();
         glm::mat4 viewMatrix = getViewMatrix();
-        glm::mat4 Model = glm::mat4(10.0);
-        glm::mat4 mvp = projectionMatrix * viewMatrix * Model;
 
-        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
-        glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &viewMatrix[0][0]);
-
-        glm::vec3 lightPos = glm::vec3(4, 4, 4);
-        glUniform3f(lightID, lightPos.x, lightPos.y, lightPos.z);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, objTexture);
-
-        glUniform1i(textureID, 0);
-
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-        glEnableVertexAttribArray(2);
-        glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-        // change to this when vertex indexing done
-        //glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
+        for (unsigned int i = 0; i < meshes.size(); ++i) {
+            meshes[i].draw(projectionMatrix, viewMatrix);
+        }
 
         glfwSwapBuffers(thisWindow);
         glfwPollEvents();
@@ -201,94 +117,6 @@ glm::mat4 Renderer::getMatricesFromInput()
     return glm::mat4();
 }
 
-GLuint Renderer::LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
-{
-    // Create the shaders
-    GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-    GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
-    // Read the Vertex Shader code from the file
-    std::string VertexShaderCode;
-    std::ifstream VertexShaderStream(vertex_file_path, std::ios::in);
-    if (VertexShaderStream.is_open()) {
-        std::stringstream sstr;
-        sstr << VertexShaderStream.rdbuf();
-        VertexShaderCode = sstr.str();
-        VertexShaderStream.close();
-    }
-    else {
-        printf("Cannot open %s\n", vertex_file_path);
-        getchar();
-        return 0;
-    }
-
-    // Read the Fragment Shader code from the file
-    std::string FragmentShaderCode;
-    std::ifstream FragmentShaderStream(fragment_file_path, std::ios::in);
-    if (FragmentShaderStream.is_open()) {
-        std::stringstream sstr;
-        sstr << FragmentShaderStream.rdbuf();
-        FragmentShaderCode = sstr.str();
-        FragmentShaderStream.close();
-    }
-
-    GLint Result = GL_FALSE;
-    int InfoLogLength;
-
-    // Compile Vertex Shader
-    printf("Compiling shader: %s\n", vertex_file_path);
-    char const* VertexSourcePointer = VertexShaderCode.c_str();
-    glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
-    glCompileShader(VertexShaderID);
-
-    // Check Vertex Shader
-    glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-    glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    if (InfoLogLength > 0) {
-        std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
-        glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-        printf("%s\n", &VertexShaderErrorMessage[0]);
-    }
-
-    // Compile Fragment Shader
-    printf("Compiling shader: %s\n", fragment_file_path);
-    char const* FragmentSourcePointer = FragmentShaderCode.c_str();
-    glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
-    glCompileShader(FragmentShaderID);
-
-    // Check Fragment Shader
-    glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-    glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    if (InfoLogLength > 0) {
-        std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
-        glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-        printf("%s\n", &FragmentShaderErrorMessage[0]);
-    }
-
-    // Link the program
-    printf("Linking program\n");
-    GLuint ProgramID = glCreateProgram();
-    glAttachShader(ProgramID, VertexShaderID);
-    glAttachShader(ProgramID, FragmentShaderID);
-    glLinkProgram(ProgramID);
-
-    // Check the program
-    glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
-    glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    if (InfoLogLength > 0) {
-        std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
-        glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-        printf("%s\n", &ProgramErrorMessage[0]);
-    }
-
-    glDetachShader(ProgramID, VertexShaderID);
-    glDetachShader(ProgramID, FragmentShaderID);
-
-    glDeleteShader(VertexShaderID);
-    glDeleteShader(FragmentShaderID);
-
-    return ProgramID;
-}
 
 void Renderer::calcInputs(GLFWwindow* window)
 {
