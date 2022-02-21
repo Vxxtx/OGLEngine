@@ -5,7 +5,7 @@
 #include "glm/glm.hpp"
 
 namespace ObjectLoader {
-	bool LoadObject(const char* path, Mesh& outMesh)
+	bool LoadObject(const char* path, MeshData& outMesh)
 	{
 		std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
 		std::vector<glm::vec3> temp_vertices;
@@ -163,5 +163,18 @@ namespace ObjectLoader {
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 		return textureID;
+	}
+
+	Mesh* SpawnObject(const MeshData& inMeshData)
+	{
+		if (inMeshData.meshName == "") {
+			printf("Tried to spawn mesh with invalid mesh name");
+			return nullptr;
+		}
+
+		Mesh* newMesh{};
+		newMesh->setMeshData(inMeshData);
+
+		return newMesh;
 	}
 }

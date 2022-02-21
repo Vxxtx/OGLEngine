@@ -82,9 +82,9 @@ int Renderer::Begin()
     GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
 
     GLuint objTexture = ObjectLoader::LoadBMP("engine/tex.bmp");
-    GLuint textureID = glGetUniformLocation(programID, "textureSampler");
+    GLuint textureID = glGetUniformLocation(programID, "myTextureSampler");
 
-    Mesh newMesh;
+    MeshData newMesh;
     bool result = ObjectLoader::LoadObject("engine/cube.obj", newMesh);
 
     std::vector<glm::vec3>& vertices = newMesh.vertices;
@@ -124,7 +124,7 @@ int Renderer::Begin()
 
     double lastFrameCounterTime = glfwGetTime();
     int nbFrames = 0;
-
+    
     while (!glfwWindowShouldClose(thisWindow)) {
         if (glfwGetKey(thisWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(thisWindow, GL_TRUE);
@@ -156,7 +156,7 @@ int Renderer::Begin()
         calcInputs(thisWindow);
         glm::mat4 projectionMatrix = getProjectionMatrix();
         glm::mat4 viewMatrix = getViewMatrix();
-        glm::mat4 Model = glm::mat4(1.0);
+        glm::mat4 Model = glm::mat4(10.0);
         glm::mat4 mvp = projectionMatrix * viewMatrix * Model;
 
         glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
@@ -340,32 +340,32 @@ void Renderer::calcInputs(GLFWwindow* window)
 
     // Move forward
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        position += direction * deltaTime * speed;
+        camera_position += direction * deltaTime * speed;
     }
     // Move backward
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        position -= direction * deltaTime * speed;
+        camera_position -= direction * deltaTime * speed;
     }
     // Strafe right
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        position += right * deltaTime * speed;
+        camera_position += right * deltaTime * speed;
     }
     // Strafe left
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        position -= right * deltaTime * speed;
+        camera_position -= right * deltaTime * speed;
     }
 
     // Go up
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-        position += up * deltaTime * speed;
+        camera_position += up * deltaTime * speed;
     }
 
     // Go down
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-        position -= up * deltaTime * speed;
+        camera_position -= up * deltaTime * speed;
     }
 
     // float FOV = initialFOV - 5 * glfwGetMouseWheel
     projMatrix = glm::perspective(glm::radians(FOV), 4.f / 3.f, 0.1f, 100.f);
-    viewMatrix = glm::lookAt(position, position + direction, up);
+    viewMatrix = glm::lookAt(camera_position, camera_position + direction, up);
 }

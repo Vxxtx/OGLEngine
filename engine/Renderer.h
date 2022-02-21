@@ -41,7 +41,7 @@ protected:
 	glm::mat4 viewMatrix{};
 	glm::mat4 getViewMatrix() const { return viewMatrix; }
 
-	glm::vec3 position{ glm::vec3(0, 0, 5) };
+	glm::vec3 camera_position{ glm::vec3(0, 0, 5) };
 
 	float hAngle{ 3.14f }; /* Horizontal angle */
 	float vAngle{ 0.f }; /* Vertical angle */

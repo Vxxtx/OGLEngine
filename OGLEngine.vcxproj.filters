@@ -27,12 +27,24 @@
     <ClCompile Include="engine\ObjectLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="engine\Base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\ObjectLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\Base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

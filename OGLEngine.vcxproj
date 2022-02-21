@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\source\repos\OGLEngine\packages\glm.0.9.9.800\build\native\include;D:\source\repos\OGLEngine\packages\glfw.3.3.6\build\native\lib\static\v143\win32;D:\source\repos\OGLEngine\packages\glew.1.9.0.1\build\native\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\source\repos\OGLEngine\packages\glm.0.9.9.800\build\native\include;D:\source\repos\OGLEngine\packages\glfw.3.3.6\build\native\lib\static\v143\win32;D:\source\repos\OGLEngine\packages\glew.1.9.0.1\build\native\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,13 +145,17 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="engine\Base.cpp" />
     <ClCompile Include="engine\main.cpp" />
     <ClCompile Include="engine\ObjectLoader.cpp" />
     <ClCompile Include="engine\Renderer.cpp" />
+    <ClCompile Include="engine\Mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\Base.h" />
     <ClInclude Include="engine\ObjectLoader.h" />
     <ClInclude Include="engine\Renderer.h" />
+    <ClInclude Include="engine\Mesh.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
